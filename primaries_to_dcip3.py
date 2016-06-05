@@ -124,3 +124,8 @@ if __name__ in "__main__":
     print "right_to_p3"
     print right_to_p3.I * right_scale
 
+    if options.outfname != '':
+        handle = open(options.outfname, 'w')
+        handle.write(json.dumps({'left':(left_to_p3.I * left_scale).tolist(), 'right':(right_to_p3.I * right_scale).tolist()}))
+    handle.close() 
+
