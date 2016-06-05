@@ -25,6 +25,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+This is a command-line utility for generating 3x3 matrices to transform linear 
+RGB values from each eye of a Dolby Stereo 3D projector to P3 color space.
+
+Measurements of CIE xy chromaticity pairs for R,G,B and W for each eye are 
+provided through a json file (see test/measurements.json).
+
+Resulting matrices are printed to the terminal output and can optionally by
+written to their own json file. 
+"""
 
 import os
 import sys
