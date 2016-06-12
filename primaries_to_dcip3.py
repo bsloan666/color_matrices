@@ -67,7 +67,8 @@ def xyz_to_XYZ(v):
     """
     convert xyz to XYZ
     """
-    V = [(1.0/v[1])*v[0], (1.0/v[1])*v[1],(1.0/v[1])*v[2]]
+    V = [(1.0/v[1])*v[0], 1.0,(1.0/v[1])*v[2]]
+    #print "XYZ val:",V
     return V
 
 def primaries_to_XYZ(b):
@@ -83,13 +84,28 @@ def primaries_to_XYZ(b):
     diag_w = np.diagflat(v)
     return bb.T * diag_w 
 
+def compute_norm(mat):
+    m = mat.tolist()
+    a = m[0][0]+m[0][1]+m[0][2]
+    b = m[1][0]+m[1][1]+m[1][2]
+    c = m[2][0]+m[2][1]+m[2][2]
+    if a > b:
+        if a > c:
+            return a
+        else:
+            return c
+    else:
+        return b
+    
+
 def a_to_b(a, b):
     """
     Make a colorspace conversion matrix between two sets of primaries.
     """
     a_to_xyz = primaries_to_XYZ(a)
+    #print "ToXYZ:",a_to_xyz
     b_to_xyz = primaries_to_XYZ(b)
-    return b_to_xyz.I * a_to_xyz
+    return a_to_xyz.I * b_to_xyz
 
 
 if __name__ in "__main__":
@@ -99,12 +115,6 @@ if __name__ in "__main__":
     test_left_rgbw =  [[0.62, 0.34], [0.31, 0.54], [0.18,0.07], [0.3201, 0.314]]
     test_right_rgbw = [[0.65, 0.32], [0.29, 0.61], [0.17,0.04], [0.3100, 0.332]]
 
-    # The following values are used to scale the resulting matrices
-    # Not sure if they're derived, measured or given, But without them
-    # results don't match the spreadsheet.
-    left_scale =  0.88871
-    right_scale = 0.97961
-
     options,args = parse_cmdline()
 
     if options.infname != '':
@@ -113,9 +123,6 @@ if __name__ in "__main__":
         handle.close()
         test_left_rgbw = data['left_primaries_and_wp']
         test_right_rgbw = data['right_primaries_and_wp']
-
-        left_scale =  data['left_scale'] 
-        right_scale = data['right_scale'] 
 
     # Let's add the 'z' component
     left = promote_xyz(test_left_rgbw)
@@ -129,13 +136,18 @@ if __name__ in "__main__":
     left_to_p3  = a_to_b(test_left_rgbw, p3)
     right_to_p3 = a_to_b(test_right_rgbw, p3)
 
+    left_norm = compute_norm(left_to_p3)
+    right_norm = compute_norm(right_to_p3)
+    left_to_p3 = left_to_p3 / left_norm
+    right_to_p3 = right_to_p3 / right_norm
+
     print "left_to_p3"
-    print left_to_p3.I * left_scale 
+    print left_to_p3  
     print "right_to_p3"
-    print right_to_p3.I * right_scale
+    print right_to_p3
 
     if options.outfname != '':
         handle = open(options.outfname, 'w')
-        handle.write(json.dumps({'left':(left_to_p3.I * left_scale).tolist(), 'right':(right_to_p3.I * right_scale).tolist()}))
+        handle.write(json.dumps({'left':(left_to_p3).tolist(), 'right':(right_to_p3).tolist()}))
     handle.close() 
 
