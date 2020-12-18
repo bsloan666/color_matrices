@@ -31,7 +31,7 @@ containing primaries and white points (expressed as xy chromaticity coordinates)
 of a source and destination gamut.
 
 example command:
-python color_matrix.py "[[0.708,0.292],[0.17,0.797], [0.131, 0.046], [0.3127,0.329]]" "[[0.64,0.33],[0.3,0.6], [0.15,0.06],[0.3127,0.329]]"
+python color_matrix.py AWG AP0 
 """
 
 import os
@@ -40,7 +40,7 @@ import numpy as np
 import json
 import math
 from optparse import OptionParser
-
+import primaries_db as pdb
 
 def promote_xyz(a):
     """
@@ -95,12 +95,15 @@ def a_to_b(a, b):
 
 
 if __name__ in "__main__":
-    src = eval(sys.argv[1])
-    dst = eval(sys.argv[2])
+    srcname = sys.argv[1]
+    dstname = sys.argv[2]
+
+    src = pdb.name_to_param_array(srcname) 
+    dst = pdb.name_to_param_array(dstname) 
 
     src = promote_xyz(src)
     dst = promote_xyz(dst)
 
     out = a_to_b(src, dst)
-    np.set_printoptions(precision=5, suppress=True)
+    np.set_printoptions(precision=6, suppress=True)
     print(out) 
